@@ -34,7 +34,7 @@ sending your own public certificate and verifying a received one.
 I have copy pasted the part of the code that I have implemented those. You will understand when 
 you see the original sample.
 
-'''java
+```java
 			if (verifyRequest != null) {
                 /* Verify a certificate chain supplied by the peer. */
             	Log.d(TAG ," in verify");
@@ -87,4 +87,4 @@ you see the original sample.
                 return true;
             }
 
-'''
+```
