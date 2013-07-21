@@ -1,0 +1,28 @@
+
+WebID android library for AllJoyn.
+
+WebID is a single sign on standard, and AllJoyn helps you create a proximity based 
+peer2peer network without dealing with communication interfaces.
+When you combine the two you get social devices.
+
+Devices have their own x509 certificates and web profiles. In the web profiles 
+they declare their owners. And by using the social networks of the owners of the devices
+services in AllJoyn are authenticated.
+
+And this library does it :). In AllJoyn RSA based key exchange mechanism for authentication.
+It uses X509 certificates. But it leaves the verification of the certificates to the application developers.
+At this point, our library comes into play. We "verify" the certificate by checking the 
+public key information at the web profile (see WebID) and then "validate" 
+the trust connection.
+
+For the time being you have to select which type of social network search that you want.
+
+"ActAsHuman" : certificate belongs to human
+"ActAsDevice" : certificate belongs to device itself and the devices have the same owner.
+"DirectTrust" : certificate belongs to device itself and the devices owners are direct friends.
+"InDirectTrust" : certificate belongs to device itself and the devices owners are indirect friends, namely they have a common friend.
+
+
+The code is highly experimental (implemented in two days). Use with your own risk. You can ask me before using it. 
+
+
