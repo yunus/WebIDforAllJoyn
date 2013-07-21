@@ -90,7 +90,8 @@ public class Util {
 		Model model = ModelFactory.createDefaultModel() ;
 		JenaReader reader =  new JenaReader();
 		reader.read(model, serviceUrl);
-		Log.d(TAG,"Here is our model:\n" + model.toString());
+		Log.d(TAG,"We are about the query :"+serviceUrl );
+		//Log.d(TAG,"Here is our model:\n" + model.toString());
 		return QueryExecutionFactory.create(query, model) ;
 
 

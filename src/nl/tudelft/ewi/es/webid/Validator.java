@@ -4,8 +4,11 @@
 package nl.tudelft.ewi.es.webid;
 
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import android.util.Log;
 
@@ -224,9 +227,77 @@ class InDirectTrust extends ValidatorCommons implements Validator {
 		super(certOfAuthority, certOfSupplicant);
 	}
 	
+	private void fillFriendlists(List <String> owners, Set <String> friendsofOwners,HashMap<String, List<String>> friendMap, String deviceUri, Set <String> blackList){
+		for(String owner : owners){
+			List <String> temp = fetchFriends(owner);
+			if(null != deviceUri && !temp.contains(deviceUri)){ 
+				blackList.add(owner);
+				Log.w(TAG, "Hey Suppliicant:" + deviceUri + " is lying about:"+owner);
+				// Complicated isn't it :P
+				continue;
+			}
+			friendsofOwners.addAll(temp);
+			for(String f: temp){
+				if(friendMap.containsKey(f)){
+					friendMap.get(f).add(owner);
+				}else {
+					List <String> l = new LinkedList<String>();
+					l.add(owner);
+					friendMap.put(f, l);
+				}
+			}
+		}
+	}
+	
 	@Override
 	public boolean validate() {
-		// TODO Auto-generated method stub
+		String authUri = Util.getSanURI(certOfAuthority); // Points to the web profile of the authority machine
+		String suppUri = Util.getSanURI(certOfSupplicant); // Points to the web profile of the supplicant machine
+
+		List <String> ownersOfAuthority = fetchFriends(authUri);
+		List <String> ownersOfSupplicant = fetchFriends(suppUri);
+		
+		Log.d(TAG, "Owners of the authority("+authUri+") are: " + ownersOfAuthority.toString());
+		Log.d(TAG, "Owners of the supplicant("+suppUri+") are: " + ownersOfSupplicant.toString());
+		
+		Set <String> friendsOftheAuthOwners = new HashSet<String>();
+		Set <String> friendsOftheSuppOwners = new HashSet<String>();
+		
+		
+		
+		HashMap<String, List<String>> friendMap =  new HashMap<String, List<String>>();
+		// The Supplicant device can claim that Obama owns it. However, we should be sure that Obama
+		// really owns the device. Therefore, while checking the friends of Obama, we will also check for the 
+		// supplicant device. If supplicant device does not exist, Obama goes to black list.
+		Set <String> blackListOfSupplicantOwners = new HashSet<String>(); 
+		
+		fillFriendlists(ownersOfAuthority, friendsOftheAuthOwners, friendMap,null,null);
+		fillFriendlists(ownersOfSupplicant, friendsOftheSuppOwners, friendMap, suppUri,blackListOfSupplicantOwners);
+		
+		Log.d(TAG,"Friends of the auth owners are:"+friendsOftheAuthOwners);
+		Log.d(TAG,"Friends of the Supp owners are:" +friendsOftheSuppOwners);
+		Log.d(TAG,"Black list for supp:"+blackListOfSupplicantOwners);
+		
+		friendsOftheAuthOwners.retainAll(friendsOftheSuppOwners);
+		Log.d(TAG, "Common friends are:"+friendsOftheAuthOwners);
+		
+		for(String friend : friendsOftheAuthOwners){
+			//Check if the friend on leaf of the social network knows the Owners of Supplicant who claim that they know this guy
+			List<String> tempFriends = fetchFriends(friend);
+			tempFriends.retainAll(friendMap.get(friend)); // if tempFriends.size > 0 then we are sure that supp owner and its claimed friend are really friends indeed
+			Log.d(TAG,"Hey common friend knows these supplicant owners:"+tempFriends.toString());
+			// If we have found a common friend now lastly we should be sure that supplicant Owner really owns the device.
+			// Device can claim someone who is unrelated owns the device, and exploit its social network.
+			tempFriends.removeAll(blackListOfSupplicantOwners);
+			if (tempFriends.size() > 0){
+				//Hey we have found a connection!!!
+				
+				Log.i(TAG, "The common friend is:"+friend+" known by one of these supp owners:"+tempFriends.toString());
+				return true;
+			}
+		}
+		
+		
 		return false;
 	}
 	
