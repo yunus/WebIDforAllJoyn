@@ -74,6 +74,9 @@ abstract class ValidatorCommons  {
 		QueryExecution qexec = Util.fetchRemoteAndQuery(FIND_FRIENDS, url);
 		ResultSet results = null;
 		List<String> friends =  new LinkedList<String>();
+		if (null == qexec){
+			return friends;
+		}
 		try {
 			results = qexec.execSelect();
 			for(; null != results && results.hasNext() ;){

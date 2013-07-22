@@ -89,8 +89,16 @@ public class Util {
 
 		Model model = ModelFactory.createDefaultModel() ;
 		JenaReader reader =  new JenaReader();
-		reader.read(model, serviceUrl);
 		Log.d(TAG,"We are about the query :"+serviceUrl );
+		long now = System.currentTimeMillis();
+		try {
+		reader.read(model, serviceUrl);
+		}catch(NullPointerException ex){
+			Log.e(TAG,"exception while fetching the model "+ ex.getMessage());
+			return null;
+		} finally{
+			Log.d(TAG,"++++ Remote fetch of serviceurl:"+ serviceUrl+ "took"+(System.currentTimeMillis()-now));
+		}
 		//Log.d(TAG,"Here is our model:\n" + model.toString());
 		return QueryExecutionFactory.create(query, model) ;
 
